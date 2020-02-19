@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,12 +29,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.commongrams.CommonGramsFilterFactory;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
@@ -51,7 +47,7 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.suggest.InputIterator;
@@ -68,7 +64,6 @@ import org.apache.lucene.util.CharsRefBuilder;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.IntsRef;
 import org.apache.lucene.util.IntsRefBuilder;
-import org.apache.lucene.util.UnicodeUtil;
 import org.apache.lucene.util.fst.Builder;
 import org.apache.lucene.util.fst.FST;
 import org.apache.lucene.util.fst.FST.Arc;
@@ -254,7 +249,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                 protected TokenStreamComponents wrapComponents(String fieldName, TokenStreamComponents components) {
                     ShingleFilter shingles = new ShingleFilter(components.getTokenStream(), 2, grams);
                     shingles.setTokenSeparator(Character.toString((char) separator));
-                    return new TokenStreamComponents(components.getTokenizer(), shingles);
+                    return new TokenStreamComponents(components.getSource(), shingles);
                 }
             };
         }
@@ -318,7 +313,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
             }
             reader = DirectoryReader.open(writer);
 
-            Terms terms = MultiFields.getTerms(reader, "body");
+            Terms terms = MultiTerms.getTerms(reader, "body");
             if (terms == null) {
                 throw new IllegalArgumentException("need at least one suggestion");
             }
@@ -645,10 +640,10 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                         @Override
                         protected void addIfCompetitive(Util.FSTPath<Long> path) {
                             if(log.isTraceEnabled()) {
-                                log.trace(" {} path: {}", path.arc.label != separator ? "keep" : "prevent",
+                                log.trace(" {} path: {}", path.arc.label() != separator ? "keep" : "prevent",
                                         Util.toBytesRef(path.input.get(), new BytesRefBuilder()).utf8ToString() + "; " + path + "; arc=" + path.arc);
                             }
-                            if (path.arc.label != separator) {
+                            if (path.arc.label() != separator) {
                                 super.addIfCompetitive(path);
                             }
                         }
@@ -786,7 +781,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
             if (fst.findTargetArc(bytes[pos++] & 0xff, arc, arc, bytesReader) == null) {
                 return null;
             } else {
-                output = fst.outputs.add(output, arc.output);
+                output = fst.outputs.add(output, arc.output());
             }
         }
 

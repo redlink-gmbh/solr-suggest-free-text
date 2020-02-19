@@ -5,8 +5,8 @@ jdk:
   - openjdk11
   
 env:
-  - SOLR_VERSION=7.7.1
-  - SOLR_VERSION=7.0.1
+  - SOLR_VERSION=8.4.1
+  - SOLR_VERSION=8.0.0
 
 install: true
 script: mvn -B -V package -Prelease -Dsolr.version=${SOLR_VERSION}
