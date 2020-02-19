@@ -110,7 +110,6 @@ import org.slf4j.LoggerFactory;
  * 
  * onlyMorePopular is unused.
  *
- * @lucene.experimental
  */
 // redundant 'implements Accountable' to workaround javadocs bugs
 public class FreeTextSuggester extends Lookup implements Accountable {
@@ -269,6 +268,10 @@ public class FreeTextSuggester extends Lookup implements Accountable {
     /**
      * Build the suggest index, using up to the specified amount of temporary RAM
      * while building. Note that the weights for the suggestions are ignored.
+     * 
+     * @param iterator the input interator
+     * @param ramBufferSizeMB the buffer size in MByte
+     * @throws IOException on any IO releated error
      */
     public void build(InputIterator iterator, double ramBufferSizeMB) throws IOException {
         if (iterator.hasPayloads()) {

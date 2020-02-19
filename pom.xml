@@ -17,15 +17,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <prerequisites>
-        <maven>3.0.4</maven>
-    </prerequisites>
 
     <groupId>io.redlink.solr</groupId>
     <artifactId>suggest-free-text</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <name>Free Text Suggestor</name>
+    <url>https://github.com/redlink-gmbh/solr-suggest-free-text</url>
     <description>
         Version of the Solr Free Text Suggestor that collate suggestions into
         the original search query and provides highlighting information about
@@ -58,7 +56,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/redlink-gmbh/solr-suggest-free-text.git</connection>
-        <developerConnection>scm:git@github.com:redlink-gmbh/solr-suggest-free-text.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com:redlink-gmbh/solr-suggest-free-text.git</developerConnection>
         <url>https://github.com/redlink-gmbh/solr-suggest-free-text</url>
         <tag>HEAD</tag>
     </scm>
@@ -82,39 +80,38 @@
     </distributionManagement>
 
     <properties>
+        <java.version>8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <solr.version>7.7.2</solr.version>
+        <!-- we have API changes in Solr 8 -->
+        <solr.version>[7.0,8)</solr.version>
     </properties>
 
     <dependencies>
-        <dependency>
+        <dependency> <!-- This expects to run within a Solr Server -->
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-suggest</artifactId>
             <version>${solr.version}</version>
+            <scope>provided</scope>
         </dependency>
-        <dependency>
+        <dependency> <!-- This expects to run within a Solr Server -->
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
             <version>${solr.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
             <version>${solr.version}</version>
+            <scope>provided</scope>
         </dependency>
-
-        <!-- dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>20.0</version> - newer versions are incompatible with Solr Highlighting -
-        </dependency -->
 
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.7</version>
+            <scope>provided</scope> <!-- Solr provides slf4j -->
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -140,20 +137,38 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <rules>
+                        <requireMavenVersion>
+                            <version>3.0.5</version>
+                        </requireMavenVersion>
+                        <dependencyConvergence />
+                        <requireNoRepositories />
+                    </rules>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
+                <version>3.0.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M4</version>
             </plugin>
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
@@ -161,7 +176,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.8.2</version>
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -174,7 +189,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifest>
