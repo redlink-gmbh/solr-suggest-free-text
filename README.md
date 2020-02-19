@@ -8,6 +8,13 @@
 
 A Suggester based on the [Solr FreeTextLookupFactory](https://lucene.apache.org/solr/guide/7_7/suggester.html#freetextlookupfactory) that returns the collates the parsed query with suggestions obtained by the same way as implemented by the Free Text Suggester. To improve the user expirience the suggested part of the returned query is highlighted.
 
+## Supported Solr Versions
+
+This module depends on APIs that have changed in an incompatible manner between Solr 7 and Solr 8.
+
+* `1.x` releases are compatible to Solr `7.x` releases
+* `2.x` releases are compatible to Solr `8.x` releases (currently tested up to Solr `8.4.1`)
+
 ## Configuration
 
 This implementation supports the exact same configuration parameter as the original Solr [FreeTextLookupFactory](https://lucene.apache.org/solr/guide/7_7/suggester.html#freetextlookupfactory).
