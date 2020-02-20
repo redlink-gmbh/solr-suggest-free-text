@@ -17,6 +17,8 @@
 package io.redlink.lucene.search.suggest;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -640,10 +642,10 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                         @Override
                         protected void addIfCompetitive(Util.FSTPath<Long> path) {
                             if(log.isTraceEnabled()) {
-                                log.trace(" {} path: {}", path.arc.label() != separator ? "keep" : "prevent",
+                                log.trace(" {} path: {}", getFSTArcLabel(path.arc) != separator ? "keep" : "prevent",
                                         Util.toBytesRef(path.input.get(), new BytesRefBuilder()).utf8ToString() + "; " + path + "; arc=" + path.arc);
                             }
-                            if (path.arc.label() != separator) {
+                            if (getFSTArcLabel(path.arc) != separator) {
                                 super.addIfCompetitive(path);
                             }
                         }
@@ -781,7 +783,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
             if (fst.findTargetArc(bytes[pos++] & 0xff, arc, arc, bytesReader) == null) {
                 return null;
             } else {
-                output = fst.outputs.add(output, arc.output());
+                output = fst.outputs.add(output, getFSTArcOutput(arc));
             }
         }
 
@@ -800,8 +802,73 @@ public class FreeTextSuggester extends Lookup implements Accountable {
      * exist.
      */
     public Object get(CharSequence key) {
+        
         throw new UnsupportedOperationException();
     }
     
+    private static final Method arcOutputMethod;
+    private static final java.lang.reflect.Field arcOutputField;
+    private static final Method arcLabelMethod;
+    private static final java.lang.reflect.Field arcLabelField;
+    
+    static {
+        Method m = null;
+        java.lang.reflect.Field f = null;
+        try {
+            m = FST.Arc.class.getMethod("output");
+        } catch (NoSuchMethodException e) {
+            //we have the old FST API
+            try {
+                f = FST.Arc.class.getField("output");
+            } catch(NoSuchFieldException e1) {
+                throw new IllegalStateException("Unsupported Solr FST API version!");
+            }
+        }
+        arcOutputMethod = m;
+        arcOutputField = f;
+        
+        m = null;
+        f = null;
+        try {
+            m = FST.Arc.class.getMethod("label");
+        } catch (NoSuchMethodException e) {
+            //we have the old FST API
+            try {
+                f = FST.Arc.class.getField("label");
+            } catch(NoSuchFieldException e1) {
+                throw new IllegalStateException("Unsupported Solr FST API version!");
+            }
+        }
+        arcLabelMethod = m;
+        arcLabelField = f;
+    }
+    
+    private static <T> T getFSTArcOutput(FST.Arc<T> arc){
+        try {
+            if(arcOutputMethod != null) {
+                return (T)arcOutputMethod.invoke(arc);
+            } else {
+                return (T) arcOutputField.get(arc);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Unsupported Solr FST API version. Unable to access FST.Arc.output", e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalStateException("Unsupported Solr FST API version. Unable to access FST.Arc.output", e);
+        }
+    }
+    
+    private static int getFSTArcLabel(FST.Arc<?> arc){
+        try {
+            if(arcLabelMethod != null) {
+                return (int)arcLabelMethod.invoke(arc);
+            } else {
+                return arcLabelField.getInt(arc);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Unsupported Solr FST API version. Unable to access FST.Arc.label", e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalStateException("Unsupported Solr FST API version. Unable to access FST.Arc.label", e);
+        }
+    }
     
 }
