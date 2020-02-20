@@ -13,7 +13,8 @@ A Suggester based on the [Solr FreeTextLookupFactory](https://lucene.apache.org/
 This module depends on APIs that have changed in an incompatible manner between Solr 7 and Solr 8.
 
 * `1.x` releases are compatible to Solr `7.x` releases
-* `2.x` releases are compatible to Solr `8.x` releases (currently tested up to Solr `8.4.1`)
+* `2.x` releases are compatible to Solr `8.4+` releases (currently tested up to Solr `8.4.1`)
+* for Solr `[8.0,8.4)` try the `solr-8.0_support` branch. This uses reflection to work around FST api changes.
 
 ## Configuration
 
