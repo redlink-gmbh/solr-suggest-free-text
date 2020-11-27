@@ -17,6 +17,8 @@
 package io.redlink.lucene.search.suggest;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,12 +32,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.commongrams.CommonGramsFilterFactory;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
@@ -51,6 +50,7 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableFieldType;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -68,7 +68,6 @@ import org.apache.lucene.util.CharsRefBuilder;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.IntsRef;
 import org.apache.lucene.util.IntsRefBuilder;
-import org.apache.lucene.util.UnicodeUtil;
 import org.apache.lucene.util.fst.Builder;
 import org.apache.lucene.util.fst.FST;
 import org.apache.lucene.util.fst.FST.Arc;
@@ -137,6 +136,24 @@ public class FreeTextSuggester extends Lookup implements Accountable {
      */
     public final static double DEFAULT_ALPHA = 0.4;
 
+    private static final Constructor<Field> FIELD_STRING_CONSTRUCTR;
+    
+    static {
+        Constructor<Field> c;
+        try {
+            c = Field.class.getConstructor(String.class, String.class, IndexableFieldType.class);
+        } catch (NoSuchMethodException e) {
+            try {
+                c = Field.class.getConstructor(String.class, CharSequence.class, IndexableFieldType.class);
+            } catch (NoSuchMethodException e1) {
+                throw new IllegalStateException("None of the expected Solr Field constructors seams to be available", e);
+            }
+        } catch (SecurityException e) {
+            throw new IllegalStateException("Unable to access constructirs of " + Field.class.getName(), e);
+        }
+        FIELD_STRING_CONSTRUCTR = c;
+    }
+    
     /** Holds 1gram, 2gram, 3gram models as a single FST. */
     private FST<Long> fst;
 
@@ -289,7 +306,6 @@ public class FreeTextSuggester extends Lookup implements Accountable {
         IndexWriterConfig iwc = new IndexWriterConfig(indexAnalyzer);
         iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         iwc.setRAMBufferSizeMB(ramBufferSizeMB);
-        IndexWriter writer = new IndexWriter(dir, iwc);
 
         FieldType ft = new FieldType(TextField.TYPE_NOT_STORED);
         // TODO: if only we had IndexOptions.TERMS_ONLY...
@@ -298,7 +314,13 @@ public class FreeTextSuggester extends Lookup implements Accountable {
         ft.freeze();
 
         Document doc = new Document();
-        Field field = new Field("body", "", ft);
+        Field field;
+        try {
+            field = FIELD_STRING_CONSTRUCTR.newInstance("body", "", ft);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new IllegalStateException("Unable to create Field instance using "+FIELD_STRING_CONSTRUCTR, e);
+        }
         doc.add(field);
 
         totTokens = 0;
@@ -306,6 +328,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
 
         boolean success = false;
         count = 0;
+        IndexWriter writer = new IndexWriter(dir, iwc);
         try {
             while (true) {
                 BytesRef surfaceForm = iterator.next();
