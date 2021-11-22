@@ -416,26 +416,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                     "grams=" + grams + " is incorrect: original model was built with grams=" + gramsOrig);
         }
         totTokens = input.readVLong();
-
-        //fst = new FST<>(input, PositiveIntOutputs.getSingleton());
-        //NOTE: We have a API change in FST with Solr 8.7: We correct for that using reflection
-        try {
-            fst = FST.class.getConstructor(DataInput.class,PositiveIntOutputs.class)
-                .newInstance(input, PositiveIntOutputs.getSingleton());
-        } catch (NoSuchMethodException e) {
-             try {
-                fst = FST.class.getConstructor(DataInput.class,DataInput.class,PositiveIntOutputs.class)
-                         .newInstance(input, input, PositiveIntOutputs.getSingleton());
-             } catch (NoSuchMethodException e1) {
-                 throw new IllegalStateException("Unsupported Solr Version: No supported FST constructor found!", e);
-             } catch (InstantiationException | IllegalAccessException |IllegalArgumentException | InvocationTargetException | SecurityException e1) {
-                 throw new IllegalStateException("Unable to load FST for suggestor using Solr 8.7+ API", e);
-             }
-        } catch (InstantiationException | IllegalAccessException |IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            throw new IllegalStateException("Unable to load FST for suggestor using Solr pre 8.7 API", e);
-        }
-        
-
+        fst = new FST(input, input, PositiveIntOutputs.getSingleton());
         return true;
     }
 

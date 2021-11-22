@@ -87,7 +87,7 @@
         <java.version>8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- we have API changes in Solr 8  -->
-        <solr.version>[8.4,9)</solr.version>
+        <solr.version>(8.7.0,9]</solr.version>
     </properties>
 
     <dependencies>
