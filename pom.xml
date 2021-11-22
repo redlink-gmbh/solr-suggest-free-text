@@ -19,7 +19,7 @@
 
     <groupId>io.redlink.solr</groupId>
     <artifactId>suggest-free-text</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.1.1</version>
 
     <name>Free Text Suggestor</name>
     <url>https://github.com/redlink-gmbh/solr-suggest-free-text</url>
@@ -57,7 +57,7 @@
         <connection>scm:git:https://github.com/redlink-gmbh/solr-suggest-free-text.git</connection>
         <developerConnection>scm:git:ssh://github.com:redlink-gmbh/solr-suggest-free-text.git</developerConnection>
         <url>https://github.com/redlink-gmbh/solr-suggest-free-text</url>
-        <tag>HEAD</tag>
+        <tag>v2.1.1</tag>
     </scm>
     <issueManagement>
         <system>github</system>
