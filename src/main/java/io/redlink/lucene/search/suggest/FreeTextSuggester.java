@@ -16,9 +16,9 @@
  */
 package io.redlink.lucene.search.suggest;
 
+import static org.apache.lucene.util.fst.FST.readMetadata;
+
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -66,10 +66,10 @@ import org.apache.lucene.util.CharsRefBuilder;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.IntsRef;
 import org.apache.lucene.util.IntsRefBuilder;
-import org.apache.lucene.util.fst.Builder;
 import org.apache.lucene.util.fst.FST;
 import org.apache.lucene.util.fst.FST.Arc;
 import org.apache.lucene.util.fst.FST.BytesReader;
+import org.apache.lucene.util.fst.FSTCompiler;
 import org.apache.lucene.util.fst.Outputs;
 import org.apache.lucene.util.fst.PositiveIntOutputs;
 import org.apache.lucene.util.fst.Util;
@@ -108,8 +108,7 @@ import org.slf4j.LoggerFactory;
  * onlyMorePopular is unused.
  *
  */
-// redundant 'implements Accountable' to workaround javadocs bugs
-public class FreeTextSuggester extends Lookup implements Accountable {
+public class FreeTextSuggester extends Lookup {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     
@@ -302,7 +301,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
         IndexReader reader = null;
 
         boolean success = false;
-        count = 0;
+        long newCount = 0;
         try {
             while (true) {
                 BytesRef surfaceForm = iterator.next();
@@ -311,7 +310,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                 }
                 field.setStringValue(surfaceForm.utf8ToString());
                 writer.addDocument(doc);
-                count++;
+                newCount++;
             }
             reader = DirectoryReader.open(writer);
 
@@ -324,7 +323,8 @@ public class FreeTextSuggester extends Lookup implements Accountable {
             TermsEnum termsEnum = terms.iterator();
 
             Outputs<Long> outputs = PositiveIntOutputs.getSingleton();
-            Builder<Long> builder = new Builder<>(FST.INPUT_TYPE.BYTE1, outputs);
+            FSTCompiler<Long> fstCompiler =
+                new FSTCompiler.Builder<>(FST.INPUT_TYPE.BYTE1, outputs).build();
 
             IntsRefBuilder scratchInts = new IntsRefBuilder();
             while (true) {
@@ -342,13 +342,14 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                     totTokens += termsEnum.totalTermFreq();
                 }
 
-                builder.add(Util.toIntsRef(term, scratchInts), encodeWeight(termsEnum.totalTermFreq()));
+                fstCompiler.add(Util.toIntsRef(term, scratchInts), encodeWeight(termsEnum.totalTermFreq()));
             }
-
-            fst = builder.finish();
-            if (fst == null) {
+            final FST<Long> newFst = FST.fromFSTReader(fstCompiler.compile(), fstCompiler.getFSTReader());
+            if (newFst == null) {
                 throw new IllegalArgumentException("need at least one suggestion");
             }
+            fst = newFst;
+            count = newCount;
             log.debug("FST: {} bytes", fst.ramBytesUsed());
 
             /*
@@ -381,23 +382,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
         output.writeByte(separator);
         output.writeVInt(grams);
         output.writeVLong(totTokens);
-        //NOTE: We have a API change in FST with Solr 8.7: We correct for that using reflection
-        Method savePre87;
-        try {
-            savePre87 = fst.getClass().getMethod("save", DataOutput.class);
-            savePre87.invoke(fst, output);
-        } catch (NoSuchMethodException e) {
-            try {
-                Method save87 = fst.getClass().getMethod("save", DataOutput.class, DataOutput.class);
-                save87.invoke(fst, output, output);
-            } catch (NoSuchMethodException e1) {
-                throw new IllegalStateException("Unsupported Solr Version: No supported FST.save(..) Method found!", e);
-            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-                throw new IllegalStateException("Unable to store FST for suggestor using Solr 8.7+ API", e1);
-            }
-        } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            throw new IllegalStateException("Unable to store FST for suggestor using Solr pre 8.7 API", e);
-        }
+        fst.save(output, output);
         return true;
     }
 
@@ -407,16 +392,21 @@ public class FreeTextSuggester extends Lookup implements Accountable {
         count = input.readVLong();
         byte separatorOrig = input.readByte();
         if (separatorOrig != separator) {
-            throw new IllegalStateException("separator=" + separator
-                    + " is incorrect: original model was built with separator=" + separatorOrig);
+            throw new IllegalStateException(
+                "separator="
+                    + separator
+                    + " is incorrect: original model was built with separator="
+                    + separatorOrig);
         }
         int gramsOrig = input.readVInt();
         if (gramsOrig != grams) {
             throw new IllegalStateException(
-                    "grams=" + grams + " is incorrect: original model was built with grams=" + gramsOrig);
+                "grams=" + grams + " is incorrect: original model was built with grams=" + gramsOrig);
         }
         totTokens = input.readVLong();
-        fst = new FST(input, input, PositiveIntOutputs.getSingleton());
+
+        fst = new FST<>(readMetadata(input, PositiveIntOutputs.getSingleton()), input);
+
         return true;
     }
 
@@ -431,8 +421,12 @@ public class FreeTextSuggester extends Lookup implements Accountable {
     }
 
     @Override
-    public List<LookupResult> lookup(final CharSequence key, Set<BytesRef> contexts,
-            /* ignored */ boolean onlyMorePopular, int num) {
+    public List<LookupResult> lookup(
+        final CharSequence key,
+        Set<BytesRef> contexts,
+            /* ignored */ boolean onlyMorePopular,
+        int num
+    ) {
         try {
             return lookup(key, contexts, num);
         } catch (IOException ioe) {
@@ -473,7 +467,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
             PositionIncrementAttribute posIncAtt = ts.addAttribute(PositionIncrementAttribute.class);
             ts.reset();
 
-            List<String> tokens = new LinkedList<String>();
+            List<String> tokens = new LinkedList<>();
             BytesRefBuilder[] lastTokens = new BytesRefBuilder[grams];
             int[] lastTokensOffset = new int[grams];
             log.debug("lookup: key='{}'", key) ;
@@ -699,7 +693,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                 nextCompletion: for (Result<Long> completion : completions) {
                     token.setLength(prefixLength);
                     // append suffix
-                    Util.toBytesRef(completion.input, suffix);
+                    Util.toBytesRef(completion.input(), suffix);
                     token.append(suffix);
 
                     log.debug(" completion {}", token.get().utf8ToString());
@@ -721,7 +715,7 @@ public class FreeTextSuggester extends Lookup implements Accountable {
                     seen.add(BytesRef.deepCopyOf(lastToken));
                     spare.copyUTF8Bytes(token.get());
                     LookupResult result = new LookupResult(getHighlightKey(tokens, offset, token, suffix), 
-                            (long) (Long.MAX_VALUE * backoff * ((double) decodeWeight(completion.output)) / contextCount),
+                            (long) (Long.MAX_VALUE * backoff * ((double) decodeWeight(completion.output())) / contextCount),
                             getSuggestionPayload(tokens, offset, token, suffix));
                     results.add(result);
                     assert results.size() == seen.size();
