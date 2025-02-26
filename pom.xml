@@ -65,14 +65,6 @@
         <url>https://github.com/redlink-gmbh/solr-suggest-free-text/issues</url>
     </issueManagement>
 
-    <repositories>
-	    <repository> <!-- Solr Core depends on restlet and this makes sometimes problems -->
-	        <id>maven-restlet</id>
-	        <name>Public online Restlet repository</name>
-	        <url>https://maven.restlet.talend.com/</url>
-	    </repository>
-    </repositories>
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
