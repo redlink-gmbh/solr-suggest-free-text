@@ -693,7 +693,7 @@ public class FreeTextSuggester extends Lookup {
                 nextCompletion: for (Result<Long> completion : completions) {
                     token.setLength(prefixLength);
                     // append suffix
-                    Util.toBytesRef(completion.input(), suffix);
+                    Util.toBytesRef(completion.input, suffix);
                     token.append(suffix);
 
                     log.debug(" completion {}", token.get().utf8ToString());
@@ -715,7 +715,7 @@ public class FreeTextSuggester extends Lookup {
                     seen.add(BytesRef.deepCopyOf(lastToken));
                     spare.copyUTF8Bytes(token.get());
                     LookupResult result = new LookupResult(getHighlightKey(tokens, offset, token, suffix), 
-                            (long) (Long.MAX_VALUE * backoff * ((double) decodeWeight(completion.output())) / contextCount),
+                            (long) (Long.MAX_VALUE * backoff * ((double) decodeWeight(completion.output)) / contextCount),
                             getSuggestionPayload(tokens, offset, token, suffix));
                     results.add(result);
                     assert results.size() == seen.size();
