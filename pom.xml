@@ -86,9 +86,9 @@
     <properties>
         <java.version>8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <solr.version>(9.0.0,10]</solr.version>
+        <solr.version>[9.6.0,9.999]</solr.version>
         <!-- we have API changes in Solr 9  FST APIs used by the suggester -->
-        <lucene.version>(9.10.0,10]</lucene.version>
+        <lucene.version>[9.10.0,9.999]</lucene.version>
     </properties>
 
     <dependencies>
