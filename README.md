@@ -1,6 +1,5 @@
 # Redlink Free Text Suggester
 
-[![Build Status](https://app.travis-ci.com/redlink-gmbh/solr-suggest-free-text.svg?branch=master)](https://app.travis-ci.com/redlink-gmbh/solr-suggest-free-text)
 [![Maven Central](https://img.shields.io/maven-central/v/io.redlink.solr/suggest-free-text.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.redlink.solr%22)
 [![Sonatype (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/io.redlink.solr/suggest-free-text.svg)](https://oss.sonatype.org/#nexus-search;gav~io.redlink.solr~solr-suggest-free-text~~~)
 
