@@ -1,0 +1,125 @@
+name: Build, Test & Publish
+
+on:
+  push:
+    branches:
+      - "main"
+      - "maintenance/*"
+    tags:
+      - "v*"
+
+jobs:
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          fetch-depth: 2
+      - name: Set up Java/Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Detect Version
+        id: version
+        run: ./mvnw -B -q -N exec:exec -Dexec.executable=echo -Dexec.args='version=${project.version}' >>"$GITHUB_OUTPUT"
+
+  build:
+    name: Build and Test (Solr ${{ matrix.solr }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        solr:
+          - 9.0.0
+          - 9.2.1
+          - 9.3.0
+          - 9.4.1
+          - 9.5.0
+          - 9.6.1
+          - 9.7.0
+          - 9.8.0
+        include:
+          - solr: 9.8.0
+            sonar: enabled
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Java/Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Compile & Test
+        run: ./mvnw -V -B --no-transfer-progress
+          clean verify
+          -Dsolr.version=${{matrix.solr}}
+          -Psonarcloud
+          -Dsonar.projectKey=redlink-gmbh_solr-advanced-suggester
+          -Dsonar.skip=${{ github.actor == 'dependabot[bot]' || matrix.sonar != 'enabled' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Upload Test-Results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Test Results (Solr ${{matrix.solr}})
+          path: '**/TEST-*.xml'
+
+  test-results:
+    name: Test Results
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    if: ${{ !cancelled() }}
+    steps:
+      - name: Fetch Test-Results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+      - name: Report Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: 'test-results/**/TEST-*.xml'
+          action_fail: 'true'
+          action_fail_on_inconclusive: 'true'
+
+  deploy:
+    name: Publish
+    needs:
+      - version
+      - build
+    runs-on: ubuntu-latest
+    if: "github.repository == 'redlink-gmbh/solr-suggest-free-text'"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java/Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Publish Packages
+        run: ./mvnw -B --no-transfer-progress
+          deploy
+          -Prelease
+          -Dquick
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
