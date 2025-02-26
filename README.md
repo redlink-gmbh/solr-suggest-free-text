@@ -1,7 +1,12 @@
 # Redlink Free Text Suggester
 
+[![Build Status](https://github.com/redlink-gmbh/solr-suggest-free-text/actions/workflows/maven-build-and-deploy.yaml/badge.svg)](https://github.com/redlink-gmbh/solr-suggest-free-text/actions/workflows/maven-build-and-deploy.yaml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=redlink-gmbh_solr-suggest-free-text&metric=alert_status)](https://sonarcloud.io/dashboard?id=redlink-gmbh_solr-suggest-free-text)
+
 [![Maven Central](https://img.shields.io/maven-central/v/io.redlink.solr/suggest-free-text.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.redlink.solr%22)
 [![Sonatype (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/io.redlink.solr/suggest-free-text.svg)](https://oss.sonatype.org/#nexus-search;gav~io.redlink.solr~solr-suggest-free-text~~~)
+[![Javadocs](https://www.javadoc.io/badge/io.redlink.solr/solr-suggest-free-text.svg)](https://www.javadoc.io/doc/io.redlink.solr/solr-suggest-free-text)
+[![Apache 2.0 License](https://img.shields.io/github/license/redlink-gmbh/solr-suggest-free-text.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Overview:
 
@@ -14,6 +19,7 @@ This module depends on APIs that have changed in an incompatible manner between 
 * `1.x` releases are compatible to Solr `7.x` releases
 * `2.x` releases are compatible to Solr `8.4+` releases (currently tested up to Solr `8.4.1`)
 * for Solr `[8.0,8.4)` try the `solr-8.0_support` branch. This uses reflection to work around FST api changes.
+* `3.x` releases are compatible to Solr `9.6+`releases (currently tested up to Solr `9.8.0`)
 
 ## Configuration
 
