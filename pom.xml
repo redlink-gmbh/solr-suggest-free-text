@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2019 Redlink GmbH
+  ~ Copyright 2019-2024 Redlink GmbH
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
     <groupId>io.redlink.solr</groupId>
     <artifactId>suggest-free-text</artifactId>
     <version>2.2.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <name>Free Text Suggestor</name>
     <url>https://github.com/redlink-gmbh/solr-suggest-free-text</url>
@@ -34,13 +35,13 @@
 
     <organization>
         <name>Redlink GmbH</name>
-        <url>http://redlink.at</url>
+        <url>https://redlink.at</url>
     </organization>
 
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
             <distribution>repo</distribution>
             <comments>A business-friendly OSS license</comments>
         </license>
@@ -49,7 +50,7 @@
     <developers>
         <developer>
             <name>Rupert Westenthaler</name>
-            <email>rupert.westenthaler@redlink.co</email>
+            <email>rupert.westenthaler@redlink.at</email>
         </developer>
     </developers>
 
@@ -84,8 +85,11 @@
     </distributionManagement>
 
     <properties>
-        <java.version>8</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.encoding>utf8</project.build.encoding>
+        <project.build.sourceEncoding>utf8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
+
+        <java.version>17</java.version>
         <!-- we have API changes in Solr 8  -->
         <solr.version>(8.7.0,9]</solr.version>
     </properties>
@@ -248,7 +252,7 @@
             </activation>
             <properties>
                 <skipTests>true</skipTests>
-                <skipTTs>true</skipTTs>
+                <skipITs>true</skipITs>
             </properties>
         </profile>
         <profile>
