@@ -16,21 +16,6 @@ package io.redlink.lucene.search.suggest;
  * limitations under the License.
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
@@ -56,9 +41,27 @@ import org.apache.lucene.tests.util.TestUtil;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 public class TestAnalyzingSuggester extends LuceneTestCase {
 
-    /** this is basically the WFST test ported to KeywordAnalyzer. so it acts the same */
+    /**
+     * this is basically the WFST test ported to KeywordAnalyzer. so it acts the same
+     */
     public void testKeyword() throws Exception {
         Iterable<Input> keys =
             shuffle(
@@ -263,13 +266,15 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
         IOUtils.close(lineFile, indexAnalyzer, queryAnalyzer, tempDir);
     }
 
-    // TODO: more tests
-    /** basic "standardanalyzer" test with stopword removal */
+
+    /**
+     * basic "standardanalyzer" test with stopword removal
+     */
     public void testStandard() throws Exception {
         final String input =
             "the ghost of christmas past the"; // trailing stopword there just to perturb possible bugs
         Input[] keys =
-            new Input[] {
+            new Input[]{
                 new Input(input, 50),
             };
 
@@ -340,7 +345,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
     public void testNoSeps() throws Exception {
         Input[] keys =
-            new Input[] {
+            new Input[]{
                 new Input("ab cd", 0), new Input("abcd", 1),
             };
 
@@ -351,7 +356,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
         AnalyzingSuggester suggester =
             new AnalyzingSuggester(tempDir, "suggest", a, a, options, 256, -1, true);
         suggester.build(new InputArrayIterator(keys));
-        // TODO: would be nice if "ab " would allow the test to
+        // would be nice if "ab " would allow the test to
         // pass, and more generally if the analyzer can know
         // that the user's current query has ended at a word,
         // but, analyzers don't produce SEP tokens!
@@ -443,11 +448,9 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                     token("wifi", 1, 1), token("hotspot", 0, 2), token("network", 1, 1)));
 
         Input[] keys =
-            new Input[] {
+            new Input[]{
                 new Input("wifi network is slow", 50), new Input("wi fi network is fast", 10),
             };
-        // AnalyzingSuggester suggester = new AnalyzingSuggester(analyzer,
-        // AnalyzingSuggester.EXACT_FIRST, 256, -1);
         Directory tempDir = getDirectory();
         AnalyzingSuggester suggester = new AnalyzingSuggester(tempDir, "suggest", analyzer);
         suggester.build(new InputArrayIterator(keys));
@@ -465,10 +468,6 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
     public void testInputPathRequired() throws Exception {
 
-        //  SynonymMap.Builder b = new SynonymMap.Builder(false);
-        //  b.add(new CharsRef("ab"), new CharsRef("ba"), true);
-        //  final SynonymMap map = b.build();
-
         //  The Analyzer below mimics the functionality of the SynonymAnalyzer
         //  using the above map, so that the suggest module does not need a dependency on the
         //  synonym module
@@ -480,7 +479,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 new CannedTokenStream(token("ab", 1, 1), token("ba", 0, 1), token("x", 1, 1)));
 
         Input[] keys =
-            new Input[] {
+            new Input[]{
                 new Input("ab xc", 50), new Input("ba xd", 50),
             };
         Directory tempDir = getDirectory();
@@ -502,24 +501,6 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
         return new BinaryToken(term);
     }
 
-  /*
-  private void printTokens(final Analyzer analyzer, String input) throws IOException {
-    System.out.println("Tokens for " + input);
-    TokenStream ts = analyzer.tokenStream("", new StringReader(input));
-    ts.reset();
-    final TermToBytesRefAttribute termBytesAtt = ts.addAttribute(TermToBytesRefAttribute.class);
-    final PositionIncrementAttribute posIncAtt = ts.addAttribute(PositionIncrementAttribute.class);
-    final PositionLengthAttribute posLengthAtt = ts.addAttribute(PositionLengthAttribute.class);
-
-    while(ts.incrementToken()) {
-      termBytesAtt.fillBytesRef();
-      System.out.println(String.format("%s,%s,%s", termBytesAtt.getBytesRef().utf8ToString(), posIncAtt.getPositionIncrement(), posLengthAtt.getPositionLength()));
-    }
-    ts.end();
-    ts.close();
-  }
-  */
-
     private Analyzer getUnusualAnalyzer() {
         // First three calls just returns "a", then returns ["a","b"], then "a" again
         return new MultiCannedAnalyzer(
@@ -540,15 +521,12 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
             new AnalyzingSuggester(tempDir, "suggest", a, a, options, 256, -1, true);
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("x y", 1), new Input("x y z", 3), new Input("x", 2), new Input("z z z", 20),
                 }));
 
-        // System.out.println("ALL: " + suggester.lookup("x y", false, 6));
-
         for (int topN = 1; topN < 6; topN++) {
             List<LookupResult> results = suggester.lookup("x y", false, topN);
-            // System.out.println("topN=" + topN + " " + results);
 
             assertEquals(Math.min(topN, 4), results.size());
 
@@ -583,7 +561,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("x y", 1), new Input("x y z", 3), new Input("x", 2), new Input("z z z", 20),
                 }));
 
@@ -639,7 +617,6 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
     }
 
     static boolean isStopChar(char ch, int numStopChars) {
-        // System.out.println("IS? " + ch + ": " + (ch - 'a') + ": " + ((ch - 'a') < numStopChars));
         return (ch - 'a') < numStopChars;
     }
 
@@ -678,7 +655,6 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                         first = false;
                     }
                     posIncrAtt.setPositionIncrement(posInc);
-                    // System.out.println("RETURN term=" + termAtt + " numStopChars=" + numStopChars);
                     return true;
                 }
                 if (preserveHoles) {
@@ -766,7 +742,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 for (int token = 0; token < numTokens; token++) {
                     String s;
                     while (true) {
-                        // TODO: would be nice to fix this slowCompletor/comparator to
+                        // would be nice to fix this slowCompletor/comparator to
                         // use full range, but we might lose some coverage too...
                         s = TestUtil.randomSimpleString(random());
                         if (s.length() > 0) {
@@ -920,7 +896,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 System.out.println("  analyzed: " + analyzedKey);
             }
 
-            // TODO: could be faster... but it's slowCompletor for a reason
+            // could be faster... but it's slowCompletor for a reason
             for (TermFreq2 e : slowCompletor) {
                 if (e.analyzedForm.startsWith(analyzedKey)) {
                     matches.add(e);
@@ -960,7 +936,6 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
             assertEquals(matches.size(), r.size());
 
             for (int hit = 0; hit < r.size(); hit++) {
-                // System.out.println("  check hit " + hit);
                 assertEquals(matches.get(hit).surfaceForm, r.get(hit).key.toString());
                 assertEquals(matches.get(hit).weight, r.get(hit).value);
                 if (doPayloads) {
@@ -997,7 +972,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("a", 2),
                     new Input("a b c", 3),
                     new Input("a c a", 1),
@@ -1019,7 +994,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("a", 5), new Input("a b", 3), new Input("a c", 4),
                 }));
 
@@ -1064,7 +1039,8 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 @Override
                 protected TokenStreamComponents createComponents(String fieldName) {
                     return new TokenStreamComponents(
-                        r -> {},
+                        r -> {
+                        },
                         new CannedTokenStream(
                             token("hairy", 1, 1), token("smelly", 0, 1), token("dog", 1, 1)));
                 }
@@ -1121,7 +1097,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("a", 6), new Input("b", 5),
                 }));
 
@@ -1203,10 +1179,10 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
         final Analyzer a =
             new MultiCannedAnalyzer(
                 true,
-                new CannedBinaryTokenStream(token(new BytesRef(new byte[] {0x0, 0x0, 0x0}))),
-                new CannedBinaryTokenStream(token(new BytesRef(new byte[] {0x0, 0x0}))),
-                new CannedBinaryTokenStream(token(new BytesRef(new byte[] {0x0, 0x0, 0x0}))),
-                new CannedBinaryTokenStream(token(new BytesRef(new byte[] {0x0, 0x0}))));
+                new CannedBinaryTokenStream(token(new BytesRef(new byte[]{0x0, 0x0, 0x0}))),
+                new CannedBinaryTokenStream(token(new BytesRef(new byte[]{0x0, 0x0}))),
+                new CannedBinaryTokenStream(token(new BytesRef(new byte[]{0x0, 0x0, 0x0}))),
+                new CannedBinaryTokenStream(token(new BytesRef(new byte[]{0x0, 0x0}))));
 
         Directory tempDir = getDirectory();
         AnalyzingSuggester suggester =
@@ -1214,7 +1190,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
 
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("a a", 50), new Input("a b", 50),
                 }));
 
@@ -1229,7 +1205,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 tempDir, "suggest", a, a, AnalyzingSuggester.PRESERVE_SEP, 256, -1, true);
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("a a", 7),
                     new Input("a a", 7),
                     new Input("a c", 6),
@@ -1248,7 +1224,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 tempDir, "suggest", a, a, AnalyzingSuggester.PRESERVE_SEP, 256, -1, true);
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("i love lucy", 7), new Input("isla de muerta", 8),
                 }));
         assertEquals("[isla de muerta/8, i love lucy/7]", suggester.lookup("i", false, 3).toString());
@@ -1263,14 +1239,15 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
                 @Override
                 protected TokenStreamComponents createComponents(String fieldName) {
                     return new TokenStreamComponents(
-                        r -> {}, new CannedTokenStream(new Token("a", 0, 1), new Token("b", 0, 0, 1)));
+                        r -> {
+                        }, new CannedTokenStream(new Token("a", 0, 1), new Token("b", 0, 0, 1)));
                 }
             };
 
         Directory tempDir = getDirectory();
         AnalyzingSuggester suggester =
             new AnalyzingSuggester(tempDir, "suggest", a, a, 0, 256, 1, true);
-        suggester.build(new InputArrayIterator(new Input[] {new Input("a", 1)}));
+        suggester.build(new InputArrayIterator(new Input[]{new Input("a", 1)}));
         assertEquals("[a/1]", suggester.lookup("a", false, 1).toString());
         IOUtils.close(a, tempDir);
     }
@@ -1282,7 +1259,7 @@ public class TestAnalyzingSuggester extends LuceneTestCase {
             new AnalyzingSuggester(tempDir, "suggest", a, a, 0, 256, -1, true);
         suggester.build(
             new InputArrayIterator(
-                new Input[] {
+                new Input[]{
                     new Input("а где Люси?", 7),
                 }));
         expectThrows(

@@ -15,7 +15,9 @@ package io.redlink.lucene.search.suggest;/*
  * limitations under the License.
  */
 
-import static org.junit.Assert.assertNull;
+import org.apache.lucene.search.suggest.InputIterator;
+import org.apache.lucene.search.suggest.Lookup;
+import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,13 +26,11 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.redlink.lucene.search.suggest.Input;
-import io.redlink.lucene.search.suggest.InputArrayIterator;
-import org.apache.lucene.search.suggest.InputIterator;
-import org.apache.lucene.search.suggest.Lookup;
-import org.apache.lucene.util.BytesRef;
+import static org.junit.Assert.assertNull;
 
-/** Reusable Logic for confirming that Lookup impls can return suggestions during a 'rebuild' */
+/**
+ * Reusable Logic for confirming that Lookup impls can return suggestions during a 'rebuild'
+ */
 public final class SuggestRebuildTestUtil {
 
     /**
@@ -38,13 +38,13 @@ public final class SuggestRebuildTestUtil {
      * after an initial build will continue to pass during a (slow) rebuild w/new data (in a
      * background thread), and that (optional) new assertions will pass once the rebuild is complete
      *
-     * @param suggester to be tested
-     * @param initialData initial data to use for initial {@link Lookup#build}
+     * @param suggester     to be tested
+     * @param initialData   initial data to use for initial {@link Lookup#build}
      * @param initialChecks assertions to test after the initial build, and during the re-{@link
-     *     Lookup#build}
-     * @param extraData will be aded to <code>initialData</code> and used to re-<code>build()</code>
-     *     the suggester
-     * @param finalChecks assertions to test after the re-<code>build()</code> completes
+     *                      Lookup#build}
+     * @param extraData     will be aded to <code>initialData</code> and used to re-<code>build()</code>
+     *                      the suggester
+     * @param finalChecks   assertions to test after the re-<code>build()</code> completes
      */
     public static void testLookupsDuringReBuild(
         final Lookup suggester,
