@@ -16,14 +16,14 @@
  */
 package io.redlink.lucene.search.suggest;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.suggest.Lookup;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.schema.FieldType;
 import org.apache.solr.spelling.suggest.LookupFactory;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * LookupFactory implementation for {@link FreeTextSuggester}
@@ -64,23 +64,23 @@ public class FreeTextSuggesterFactory extends LookupFactory {
         FieldType ft = core.getLatestSchema().getFieldTypeByName(fieldTypeName.toString());
         if (ft == null) {
             throw new IllegalArgumentException(
-                    "Error in configuration: " + fieldTypeName.toString() + " is not defined in the schema");
+                "Error in configuration: " + fieldTypeName.toString() + " is not defined in the schema");
         }
 
         Analyzer indexAnalyzer = ft.getIndexAnalyzer();
         Analyzer queryAnalyzer = ft.getQueryAnalyzer();
 
         int grams = (params.get(NGRAMS) != null) ? Integer.parseInt(params.get(NGRAMS).toString())
-                : FreeTextSuggester.DEFAULT_GRAMS;
+            : FreeTextSuggester.DEFAULT_GRAMS;
 
         byte separator = (params.get(SEPARATOR) != null)
-                ? params.get(SEPARATOR).toString().getBytes(StandardCharsets.UTF_8)[0]
-                : FreeTextSuggester.DEFAULT_SEPARATOR;
+            ? params.get(SEPARATOR).toString().getBytes(StandardCharsets.UTF_8)[0]
+            : FreeTextSuggester.DEFAULT_SEPARATOR;
 
-                
+
         double alpha = (params.get(ALPHA) != null) ? Double.parseDouble(params.get(ALPHA).toString())
-                : FreeTextSuggester.ALPHA;
-        
+            : FreeTextSuggester.ALPHA;
+
         return new FreeTextSuggester(indexAnalyzer, queryAnalyzer, grams, separator, alpha);
     }
 

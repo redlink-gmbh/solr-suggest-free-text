@@ -16,21 +16,6 @@
  */
 package io.redlink.lucene.search.suggest;
 
-import static org.apache.lucene.util.fst.FST.readMetadata;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
@@ -78,6 +63,21 @@ import org.apache.lucene.util.fst.Util.TopResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.lucene.util.fst.FST.readMetadata;
+
 //import java.io.PrintWriter;
 
 /**
@@ -104,24 +104,31 @@ import org.slf4j.LoggerFactory;
  * From {@link #lookup}, the key of each result is the ngram token; the value is
  * Long.MAX_VALUE * score (fixed point, cast to long). Divide by Long.MAX_VALUE
  * to get the score back, which ranges from 0.0 to 1.0.
- * 
+ * <p>
  * onlyMorePopular is unused.
- *
  */
 public class FreeTextSuggester extends Lookup {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-    
-    /** Codec name used in the header for the saved model. */
+
+    /**
+     * Codec name used in the header for the saved model.
+     */
     public final static String CODEC_NAME = "freetextsuggest";
 
-    /** Initial version of the the saved model file format. */
+    /**
+     * Initial version of the the saved model file format.
+     */
     public final static int VERSION_START = 0;
 
-    /** Current version of the the saved model file format. */
+    /**
+     * Current version of the the saved model file format.
+     */
     public final static int VERSION_CURRENT = VERSION_START;
 
-    /** By default we use a bigram model. */
+    /**
+     * By default we use a bigram model.
+     */
     public static final int DEFAULT_GRAMS = 2;
 
     // In general this could vary with gram, but the
@@ -133,7 +140,9 @@ public class FreeTextSuggester extends Lookup {
      */
     public final static double ALPHA = 0.4;
 
-    /** Holds 1gram, 2gram, 3gram models as a single FST. */
+    /**
+     * Holds 1gram, 2gram, 3gram models as a single FST.
+     */
     private FST<Long> fst;
 
     /**
@@ -153,7 +162,9 @@ public class FreeTextSuggester extends Lookup {
 
     private final byte separator;
 
-    /** Number of entries the lookup was built with */
+    /**
+     * Number of entries the lookup was built with
+     */
     private long count = 0;
 
     private double alpha;
@@ -216,7 +227,9 @@ public class FreeTextSuggester extends Lookup {
         this.alpha = alpha;
     }
 
-    /** Returns byte size of the underlying FST. */
+    /**
+     * Returns byte size of the underlying FST.
+     */
     @Override
     public long ramBytesUsed() {
         if (fst == null) {
@@ -273,8 +286,8 @@ public class FreeTextSuggester extends Lookup {
     /**
      * Build the suggest index, using up to the specified amount of temporary RAM
      * while building. Note that the weights for the suggestions are ignored.
-     * 
-     * @param iterator the input interator
+     *
+     * @param iterator        the input interator
      * @param ramBufferSizeMB the buffer size in MByte
      * @throws IOException on any IO releated error
      */
@@ -339,8 +352,8 @@ public class FreeTextSuggester extends Lookup {
                 int ngramCount = countGrams(term);
                 if (ngramCount > grams) {
                     throw new IllegalArgumentException(
-                            "tokens must not contain separator byte; got token=" + term + " but gramCount=" + ngramCount
-                                    + ", which is greater than expected max ngram size=" + grams);
+                        "tokens must not contain separator byte; got token=" + term + " but gramCount=" + ngramCount
+                            + ", which is greater than expected max ngram size=" + grams);
                 }
                 if (ngramCount == 1) {
                     totTokens += termsEnum.totalTermFreq();
@@ -419,7 +432,9 @@ public class FreeTextSuggester extends Lookup {
         return lookup(key, null, onlyMorePopular, num);
     }
 
-    /** Lookup, without any context. */
+    /**
+     * Lookup, without any context.
+     */
     public List<LookupResult> lookup(final CharSequence key, int num) {
         return lookup(key, null, true, num);
     }
@@ -428,7 +443,7 @@ public class FreeTextSuggester extends Lookup {
     public List<LookupResult> lookup(
         final CharSequence key,
         Set<BytesRef> contexts,
-            /* ignored */ boolean onlyMorePopular,
+        /* ignored */ boolean onlyMorePopular,
         int num
     ) {
         try {
@@ -455,7 +470,9 @@ public class FreeTextSuggester extends Lookup {
         return count;
     }
 
-    /** Retrieve suggestions. */
+    /**
+     * Retrieve suggestions.
+     */
     @SuppressWarnings("java:S3776")
     public List<LookupResult> lookup(final CharSequence key, Set<BytesRef> contexts, int num) throws IOException {
         if (contexts != null) {
@@ -475,7 +492,7 @@ public class FreeTextSuggester extends Lookup {
             List<String> tokens = new LinkedList<>();
             BytesRefBuilder[] lastTokens = new BytesRefBuilder[grams];
             int[] lastTokensOffset = new int[grams];
-            log.debug("lookup: key='{}'", key) ;
+            log.debug("lookup: key='{}'", key);
 
             // Run full analysis, but save only the
             // last 1gram, last 2gram, etc.:
@@ -495,8 +512,8 @@ public class FreeTextSuggester extends Lookup {
                 // Safety: make sure the recalculated count "agrees":
                 if (countGrams(tokenBytes) != gramCount) {
                     throw new IllegalArgumentException(
-                            "tokens must not contain separator byte; got token=" + tokenBytes + " but gramCount="
-                                    + gramCount + " does not match recalculated count=" + countGrams(tokenBytes));
+                        "tokens must not contain separator byte; got token=" + tokenBytes + " but gramCount="
+                            + gramCount + " does not match recalculated count=" + countGrams(tokenBytes));
                 }
                 tokenOffset = tokenOffset + posIncAtt.getPositionIncrement();
                 maxEndOffset = Math.max(maxEndOffset, offsetAtt.endOffset());
@@ -504,7 +521,7 @@ public class FreeTextSuggester extends Lookup {
                 b.append(tokenBytes);
                 lastTokens[gramCount - 1] = b;
                 lastTokensOffset[gramCount - 1] = tokenOffset;
-                if(gramCount == 1) {
+                if (gramCount == 1) {
                     tokens.add(b.get().utf8ToString());
                 }
             }
@@ -512,7 +529,7 @@ public class FreeTextSuggester extends Lookup {
 
             if (!sawRealToken) {
                 throw new IllegalArgumentException(
-                        "no tokens produced by analyzer, or the only tokens were empty strings");
+                    "no tokens produced by analyzer, or the only tokens were empty strings");
             }
 
             // Carefully fill last tokens with _ tokens;
@@ -648,15 +665,15 @@ public class FreeTextSuggester extends Lookup {
                     // Must do num+seen.size() for queue depth because we may
                     // reject up to seen.size() paths in acceptResult():
                     Util.TopNSearcher<Long> searcher = new Util.TopNSearcher<Long>(fst, num, num + seen.size(),
-                            weightComparator) {
+                        weightComparator) {
 
                         BytesRefBuilder scratchBytes = new BytesRefBuilder();
 
                         @Override
                         protected void addIfCompetitive(Util.FSTPath<Long> path) {
-                            if(log.isTraceEnabled()) {
+                            if (log.isTraceEnabled()) {
                                 log.trace(" {} path: {}", path.arc.label() != separator ? "keep" : "prevent",
-                                        Util.toBytesRef(path.input.get(), new BytesRefBuilder()).utf8ToString() + "; " + path + "; arc=" + path.arc);
+                                    Util.toBytesRef(path.input.get(), new BytesRefBuilder()).utf8ToString() + "; " + path + "; arc=" + path.arc);
                             }
                             if (path.arc.label() != separator) {
                                 super.addIfCompetitive(path);
@@ -669,9 +686,9 @@ public class FreeTextSuggester extends Lookup {
                             finalLastToken.grow(finalLastToken.length() + scratchBytes.length());
                             int lenSav = finalLastToken.length();
                             finalLastToken.append(scratchBytes);
-                            if(log.isTraceEnabled()) {
+                            if (log.isTraceEnabled()) {
                                 log.trace(" accept? input='{}'; lastToken='{}'; return {}", scratchBytes.get().utf8ToString(),
-                                        finalLastToken.get().utf8ToString(), (seen.contains(finalLastToken.get()) == false));
+                                    finalLastToken.get().utf8ToString(), (seen.contains(finalLastToken.get()) == false));
                             }
                             boolean ret = seen.contains(finalLastToken.get()) == false;
 
@@ -695,7 +712,8 @@ public class FreeTextSuggester extends Lookup {
                 BytesRefBuilder suffix = new BytesRefBuilder();
                 log.debug(" {} completions", completions.topN.size());
 
-                nextCompletion: for (Result<Long> completion : completions) {
+                nextCompletion:
+                for (Result<Long> completion : completions) {
                     token.setLength(prefixLength);
                     // append suffix
                     Util.toBytesRef(completion.input, suffix);
@@ -719,12 +737,12 @@ public class FreeTextSuggester extends Lookup {
                     }
                     seen.add(BytesRef.deepCopyOf(lastToken));
                     spare.copyUTF8Bytes(token.get());
-                    LookupResult result = new LookupResult(getHighlightKey(tokens, offset, token, suffix), 
-                            (long) (Long.MAX_VALUE * backoff * ((double) decodeWeight(completion.output)) / contextCount),
-                            getSuggestionPayload(tokens, offset, token, suffix));
+                    LookupResult result = new LookupResult(getHighlightKey(tokens, offset, token, suffix),
+                        (long) (Long.MAX_VALUE * backoff * ((double) decodeWeight(completion.output)) / contextCount),
+                        getSuggestionPayload(tokens, offset, token, suffix));
                     results.add(result);
                     assert results.size() == seen.size();
-                    log.debug(" add result={}",result);
+                    log.debug(" add result={}", result);
                 }
                 backoff *= alpha;
             }
@@ -756,25 +774,29 @@ public class FreeTextSuggester extends Lookup {
         tokens.stream().limit(offset).map(BytesRef::new).forEach(tb -> {
             sug.append(tb);
             sug.append(separator);
-        }) ;
+        });
         sug.append(token);
         return sug.get();
     }
-    
+
     private CharSequence getHighlightKey(List<String> tokens, int offset, BytesRefBuilder token, BytesRefBuilder suffix) {
-       log.debug("build Highlights for tokens: {} | token: {} | suffix: {}",
-                tokens, token.get().utf8ToString(), suffix.get().utf8ToString());
-        String sep = Character.toString((char)separator);
+        log.debug("build Highlights for tokens: {} | token: {} | suffix: {}",
+            tokens, token.get().utf8ToString(), suffix.get().utf8ToString());
+        String sep = Character.toString((char) separator);
         String hl = tokens.stream().limit(offset).collect(Collectors.joining(sep)) + sep + "<em>" + token.get().utf8ToString() + "</em>";
         return hl.trim();
     }
 
-    /** weight -&gt; cost */
+    /**
+     * weight -&gt; cost
+     */
     private long encodeWeight(long ngramCount) {
         return Long.MAX_VALUE - ngramCount;
     }
 
-    /** cost -&gt; weight */
+    /**
+     * cost -&gt; weight
+     */
     // private long decodeWeight(Pair<Long,BytesRef> output) {
     private long decodeWeight(Long output) {
         assert output != null;
@@ -783,7 +805,7 @@ public class FreeTextSuggester extends Lookup {
 
     // NOTE: copied from WFSTCompletionLookup & tweaked
     private Long lookupPrefix(FST<Long> fst, FST.BytesReader bytesReader, BytesRef scratch, Arc<Long> arc)
-            throws /* Bogus */IOException {
+        throws /* Bogus */IOException {
 
         Long output = fst.outputs.getNoOutput();
 
@@ -817,6 +839,6 @@ public class FreeTextSuggester extends Lookup {
     public Object get(CharSequence key) {
         throw new UnsupportedOperationException();
     }
-    
-    
+
+
 }

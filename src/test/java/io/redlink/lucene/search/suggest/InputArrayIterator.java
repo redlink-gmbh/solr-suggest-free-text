@@ -16,15 +16,17 @@ package io.redlink.lucene.search.suggest;
  * limitations under the License.
  */
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.lucene.search.suggest.InputIterator;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 
-/** A {@link InputIterator} over a sequence of {@link Input}s. */
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * A {@link InputIterator} over a sequence of {@link Input}s.
+ */
 public final class InputArrayIterator implements InputIterator {
     private final Iterator<Input> i;
     private final boolean hasPayloads;

@@ -16,10 +16,13 @@
  */
 package io.redlink.lucene.search.suggest;
 
-import java.util.Set;
 import org.apache.lucene.util.BytesRef;
 
-/** corresponds to {@link InputIterator}'s entries */
+import java.util.Set;
+
+/**
+ * corresponds to {@link InputIterator}'s entries
+ */
 public final class Input {
     public final BytesRef term;
     public final long v;
