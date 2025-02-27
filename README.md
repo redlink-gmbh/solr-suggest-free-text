@@ -8,7 +8,7 @@
 [![Javadocs](https://www.javadoc.io/badge/io.redlink.solr/solr-suggest-free-text.svg)](https://www.javadoc.io/doc/io.redlink.solr/solr-suggest-free-text)
 [![Apache 2.0 License](https://img.shields.io/github/license/redlink-gmbh/solr-suggest-free-text.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-## Overview:
+## Overview
 
 A Suggester based on the [Solr FreeTextLookupFactory](https://lucene.apache.org/solr/guide/7_7/suggester.html#freetextlookupfactory) that returns the collates the parsed query with suggestions obtained by the same way as implemented by the Free Text Suggester. To improve the user expirience the suggested part of the returned query is highlighted.
 
