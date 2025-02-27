@@ -14,7 +14,7 @@ A Suggester based on the [Solr FreeTextLookupFactory](https://lucene.apache.org/
 
 ## Supported Solr Versions
 
-This module depends on APIs that have changed in an incompatible manner between Solr 7 and Solr 8.
+This module depends on APIs that have changed in an incompatible manner between Solr 7 and Solr 8 and again Solr 9.
 
 * `1.x` releases are compatible to Solr `7.x` releases
 * `2.x` releases are compatible to Solr `8.4+` releases (currently tested up to Solr `8.4.1`)
@@ -35,7 +35,7 @@ Important:
 
 Example configuration:
 
-```
+```xml
 <searchComponent name="suggest" class="solr.SuggestComponent">
     <lst name="suggester">
         <str name="name">contentSuggester</str>
@@ -53,7 +53,7 @@ Example configuration:
 
 and the public suggest endpoint
 
-```
+```xml
 <requestHandler name="/suggest" class="solr.SearchHandler">
   <lst name="defaults">
     <str name="suggest">true</str>
@@ -62,7 +62,7 @@ and the public suggest endpoint
   <lst name="invariants">
     <str name="wt">json</str>
     <str name="json.nl">map</str>
-    <!-- disable building/releod the suggest index via the public endpoint -->
+    <!-- disable building/reload the suggest index via the public endpoint -->
     <str name="suggest.build">false</str>
     <str name="suggest.reload">false</str>
     <str name="suggest.buildAll">false</str>
@@ -77,7 +77,7 @@ and the public suggest endpoint
 finally a second (private) requestHandler just used to build the suggest index
 
 
-```
+```xml
 <requestHandler name="/rebuild/suggest" class="solr.SearchHandler">
     <lst name="invariants">
         <str name="wt">json</str>
@@ -102,27 +102,36 @@ It uses the default suggester response format of Solr:
 
 Example response for the request `Ganztag kindergar`
 
-```
-"suggest":{"contentSuggester":{
-      "Ganztag kindergar":{
-        "numFound":10,
-        "suggestions":[{
-            "term":"ganztag\u001e<em>kindergarten</em>",
-            "weight":1125667294798616,
-            "payload":"ganztag\u001ekindergarten"},
+```json
+{
+  "suggest": {
+    "contentSuggester": {
+      "Ganztag kindergar": {
+        "numFound": 10,
+        "suggestions": [
           {
-            "term":"ganztag\u001e<em>kindergartens</em>",
-            "weight":66967949675612,
-            "payload":"ganztag\u001ekindergartens"},
-          [..],
+            "term": "ganztag\u001e<em>kindergarten</em>",
+            "weight": 1125667294798616,
+            "payload": "ganztag\u001ekindergarten"
+          },
           {
-            "term":"ganztag\u001e<em>kindergartenausstattung</em>",
-            "weight":5720880123042,
-            "payload":"ganztag\u001ekindergartenausstattung"}]}}}
-
+            "term": "ganztag\u001e<em>kindergartens</em>",
+            "weight": 66967949675612,
+            "payload": "ganztag\u001ekindergartens"
+          },
+          {
+            "term": "ganztag\u001e<em>kindergartenausstattung</em>",
+            "weight": 5720880123042,
+            "payload": "ganztag\u001ekindergartenausstattung"
+          }
+        ]
+      }
+    }
+  }
+}
 ```
 
- ## License
- 
- [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+## License
+Free use of this software is granted under the terms of the Apache License Version 2.0.
+See the [License](LICENSE.txt) for more details.
  
