@@ -261,6 +261,15 @@ public class FreeTextSuggester extends Lookup {
         build(iterator, IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB);
     }
 
+    private void assertValidInputIterator(InputIterator iterator) {
+        if (iterator.hasPayloads()) {
+            throw new IllegalArgumentException("this suggester doesn't support payloads");
+        }
+        if (iterator.hasContexts()) {
+            throw new IllegalArgumentException("this suggester doesn't support contexts");
+        }
+    }
+
     /**
      * Build the suggest index, using up to the specified amount of temporary RAM
      * while building. Note that the weights for the suggestions are ignored.
@@ -270,12 +279,7 @@ public class FreeTextSuggester extends Lookup {
      * @throws IOException on any IO releated error
      */
     public void build(InputIterator iterator, double ramBufferSizeMB) throws IOException {
-        if (iterator.hasPayloads()) {
-            throw new IllegalArgumentException("this suggester doesn't support payloads");
-        }
-        if (iterator.hasContexts()) {
-            throw new IllegalArgumentException("this suggester doesn't support contexts");
-        }
+        assertValidInputIterator(iterator);
 
         String prefix = getClass().getSimpleName();
         Path tempIndexPath = Files.createTempDirectory(prefix + ".index.");
@@ -452,6 +456,7 @@ public class FreeTextSuggester extends Lookup {
     }
 
     /** Retrieve suggestions. */
+    @SuppressWarnings("java:S3776")
     public List<LookupResult> lookup(final CharSequence key, Set<BytesRef> contexts, int num) throws IOException {
         if (contexts != null) {
             throw new IllegalArgumentException("this suggester doesn't support contexts");
@@ -757,7 +762,7 @@ public class FreeTextSuggester extends Lookup {
     }
     
     private CharSequence getHighlightKey(List<String> tokens, int offset, BytesRefBuilder token, BytesRefBuilder suffix) {
-       log.debug("build Hoghlights for tokens: {} | token: {} | suffix: {}",
+       log.debug("build Highlights for tokens: {} | token: {} | suffix: {}",
                 tokens, token.get().utf8ToString(), suffix.get().utf8ToString());
         String sep = Character.toString((char)separator);
         String hl = tokens.stream().limit(offset).collect(Collectors.joining(sep)) + sep + "<em>" + token.get().utf8ToString() + "</em>";
