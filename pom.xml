@@ -82,9 +82,9 @@
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
         <java.version>17</java.version>
-        <solr.version>[9.6.0,9.999]</solr.version>
+        <solr.version>[9.6.0,9.8.0]</solr.version>
         <!-- we have API changes in Solr 9  FST APIs used by the suggester -->
-        <lucene.version>[9.10.0,9.999]</lucene.version>
+        <lucene.version>[9.10.0,9.11.1]</lucene.version>
     </properties>
 
     <dependencies>
@@ -97,7 +97,7 @@
         <dependency> <!-- This expects to run within a Solr Server -->
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analysis-common</artifactId>
-            <version>${solr.version}</version>
+            <version>${lucene.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -129,7 +129,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-test-framework</artifactId>
-            <version>${solr.version}</version>
+            <version>${lucene.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

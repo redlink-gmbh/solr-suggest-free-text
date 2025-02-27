@@ -131,7 +131,7 @@ public class FreeTextSuggester extends Lookup {
      * given trigram did not occur, and we backoff to the bigram, the overall score
      * will be 0.4 times what the bigram model would have assigned.
      */
-    public final static double DEFAULT_ALPHA = 0.4;
+    public final static double ALPHA = 0.4;
 
     /** Holds 1gram, 2gram, 3gram models as a single FST. */
     private FST<Long> fst;
@@ -196,7 +196,7 @@ public class FreeTextSuggester extends Lookup {
      * have this byte, otherwise {@code IllegalArgumentException} is thrown.
      */
     public FreeTextSuggester(Analyzer indexAnalyzer, Analyzer queryAnalyzer, int grams, byte separator) {
-        this(indexAnalyzer, queryAnalyzer, grams, separator, DEFAULT_ALPHA);
+        this(indexAnalyzer, queryAnalyzer, grams, separator, ALPHA);
     }
 
     public FreeTextSuggester(Analyzer indexAnalyzer, Analyzer queryAnalyzer, int grams, byte separator, double alpha) {
@@ -599,7 +599,7 @@ public class FreeTextSuggester extends Lookup {
                 if (prefixOutput == null) {
                     // This model never saw this prefix, e.g. the
                     // trigram model never saw context "purple mushroom"
-                    backoff *= DEFAULT_ALPHA;
+                    backoff *= ALPHA;
                     continue;
                 }
 
@@ -766,7 +766,7 @@ public class FreeTextSuggester extends Lookup {
                 tokens, token.get().utf8ToString(), suffix.get().utf8ToString());
         String sep = Character.toString((char)separator);
         String hl = tokens.stream().limit(offset).collect(Collectors.joining(sep)) + sep + "<em>" + token.get().utf8ToString() + "</em>";
-        return hl;
+        return hl.trim();
     }
 
     /** weight -&gt; cost */

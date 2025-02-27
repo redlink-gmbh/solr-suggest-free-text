@@ -14,17 +14,18 @@ permissions:
 
 jobs:
   build:
-    name: Build and Test (Solr ${{ matrix.solr }})
+    name: Build and Test (Solr ${{ matrix.version.solr }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        solr:
-          - 9.6.0
-          - 9.7.0
-          - 9.8.0
-        include:
+        version:
+          - solr: 9.6.0
+            lucene: 9.10.0
+          - solr: 9.7.0
+            lucene: 9.11.1
           - solr: 9.8.0
+            lucene: 9.11.1
             sonar: enabled
     steps:
       - name: Checkout
@@ -40,10 +41,11 @@ jobs:
       - name: Compile & Test
         run: ./mvnw -V -B --no-transfer-progress
           clean verify
-          -Dsolr.version=${{matrix.solr}}
+          -Dsolr.version=${{matrix.version.solr}}
+          -Dlucene.version=${{matrix.version.lucene}}
           -Psonarcloud
           -Dsonar.projectKey=redlink-gmbh_solr-suggest-free-text
-          -Dsonar.skip=${{ github.actor == 'dependabot[bot]' || matrix.sonar != 'enabled' }}
+          -Dsonar.skip=${{ github.actor == 'dependabot[bot]' || matrix.version.sonar != 'enabled' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -51,7 +53,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Test Results (Solr ${{matrix.solr}})
+          name: Test Results (Solr ${{matrix.version.solr}})
           path: '**/TEST-*.xml'
 
   test-results:
