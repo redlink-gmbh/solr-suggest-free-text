@@ -79,7 +79,7 @@ public class FreeTextSuggesterFactory extends LookupFactory {
 
                 
         double alpha = (params.get(ALPHA) != null) ? Double.parseDouble(params.get(ALPHA).toString())
-                : FreeTextSuggester.DEFAULT_ALPHA;
+                : FreeTextSuggester.ALPHA;
         
         return new FreeTextSuggester(indexAnalyzer, queryAnalyzer, grams, separator, alpha);
     }
