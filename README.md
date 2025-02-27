@@ -1,7 +1,12 @@
 # Redlink Free Text Suggester
 
+[![Build Status](https://github.com/redlink-gmbh/solr-suggest-free-text/actions/workflows/maven-build-and-deploy.yaml/badge.svg)](https://github.com/redlink-gmbh/solr-suggest-free-text/actions/workflows/maven-build-and-deploy.yaml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=redlink-gmbh_solr-suggest-free-text&metric=alert_status)](https://sonarcloud.io/dashboard?id=redlink-gmbh_solr-suggest-free-text)
+
 [![Maven Central](https://img.shields.io/maven-central/v/io.redlink.solr/suggest-free-text.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.redlink.solr%22)
 [![Sonatype (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/io.redlink.solr/suggest-free-text.svg)](https://oss.sonatype.org/#nexus-search;gav~io.redlink.solr~solr-suggest-free-text~~~)
+[![Javadocs](https://www.javadoc.io/badge/io.redlink.solr/solr-suggest-free-text.svg)](https://www.javadoc.io/doc/io.redlink.solr/solr-suggest-free-text)
+[![Apache 2.0 License](https://img.shields.io/github/license/redlink-gmbh/solr-suggest-free-text.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Overview:
 
@@ -9,11 +14,12 @@ A Suggester based on the [Solr FreeTextLookupFactory](https://lucene.apache.org/
 
 ## Supported Solr Versions
 
-This module depends on APIs that have changed in an incompatible manner between Solr 7 and Solr 8.
+This module depends on APIs that have changed in an incompatible manner between Solr 7 and Solr 8 and again Solr 9.
 
 * `1.x` releases are compatible to Solr `7.x` releases
 * `2.x` releases are compatible to Solr `8.4+` releases (currently tested up to Solr `8.4.1`)
 * for Solr `[8.0,8.4)` try the `solr-8.0_support` branch. This uses reflection to work around FST api changes.
+* `3.x` releases are compatible to Solr `9.6+`releases (currently tested up to Solr `9.8.0`)
 
 ## Configuration
 
@@ -29,7 +35,7 @@ Important:
 
 Example configuration:
 
-```
+```xml
 <searchComponent name="suggest" class="solr.SuggestComponent">
     <lst name="suggester">
         <str name="name">contentSuggester</str>
@@ -47,7 +53,7 @@ Example configuration:
 
 and the public suggest endpoint
 
-```
+```xml
 <requestHandler name="/suggest" class="solr.SearchHandler">
   <lst name="defaults">
     <str name="suggest">true</str>
@@ -56,7 +62,7 @@ and the public suggest endpoint
   <lst name="invariants">
     <str name="wt">json</str>
     <str name="json.nl">map</str>
-    <!-- disable building/releod the suggest index via the public endpoint -->
+    <!-- disable building/reload the suggest index via the public endpoint -->
     <str name="suggest.build">false</str>
     <str name="suggest.reload">false</str>
     <str name="suggest.buildAll">false</str>
@@ -71,7 +77,7 @@ and the public suggest endpoint
 finally a second (private) requestHandler just used to build the suggest index
 
 
-```
+```xml
 <requestHandler name="/rebuild/suggest" class="solr.SearchHandler">
     <lst name="invariants">
         <str name="wt">json</str>
@@ -96,27 +102,36 @@ It uses the default suggester response format of Solr:
 
 Example response for the request `Ganztag kindergar`
 
-```
-"suggest":{"contentSuggester":{
-      "Ganztag kindergar":{
-        "numFound":10,
-        "suggestions":[{
-            "term":"ganztag\u001e<em>kindergarten</em>",
-            "weight":1125667294798616,
-            "payload":"ganztag\u001ekindergarten"},
+```json
+{
+  "suggest": {
+    "contentSuggester": {
+      "Ganztag kindergar": {
+        "numFound": 10,
+        "suggestions": [
           {
-            "term":"ganztag\u001e<em>kindergartens</em>",
-            "weight":66967949675612,
-            "payload":"ganztag\u001ekindergartens"},
-          [..],
+            "term": "ganztag\u001e<em>kindergarten</em>",
+            "weight": 1125667294798616,
+            "payload": "ganztag\u001ekindergarten"
+          },
           {
-            "term":"ganztag\u001e<em>kindergartenausstattung</em>",
-            "weight":5720880123042,
-            "payload":"ganztag\u001ekindergartenausstattung"}]}}}
-
+            "term": "ganztag\u001e<em>kindergartens</em>",
+            "weight": 66967949675612,
+            "payload": "ganztag\u001ekindergartens"
+          },
+          {
+            "term": "ganztag\u001e<em>kindergartenausstattung</em>",
+            "weight": 5720880123042,
+            "payload": "ganztag\u001ekindergartenausstattung"
+          }
+        ]
+      }
+    }
+  }
+}
 ```
 
- ## License
- 
- [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+## License
+Free use of this software is granted under the terms of the Apache License Version 2.0.
+See the [License](LICENSE.txt) for more details.
  
