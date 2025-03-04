@@ -1,5 +1,17 @@
 package io.redlink.lucene.search.suggest;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.StopFilter;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.search.suggest.InputIterator;
+import org.apache.lucene.search.suggest.Lookup.LookupResult;
+import org.apache.lucene.tests.analysis.MockAnalyzer;
+import org.apache.lucene.tests.analysis.MockTokenizer;
+import org.apache.lucene.tests.util.LuceneTestCase;
+import org.apache.lucene.tests.util.TestUtil;
+import org.apache.lucene.util.BytesRef;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,19 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.analysis.StopFilter;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.search.suggest.InputIterator;
-import org.apache.lucene.search.suggest.Lookup.LookupResult;
-import org.apache.lucene.tests.analysis.MockAnalyzer;
-import org.apache.lucene.tests.analysis.MockTokenizer;
-import org.apache.lucene.tests.util.LuceneTestCase;
-import org.apache.lucene.tests.util.TestUtil;
-import org.apache.lucene.util.BytesRef;
 
 /**
  * NOTE: This are the tests of the original Solr FreeTextSuggester, but the assertions are
@@ -538,7 +537,7 @@ public class FreeTextSuggesterTest extends LuceneTestCase {
                 System.out.println("  expected: " + expected);
                 System.out.println("    actual: " + actual);
             }
-            actual.forEach( suggestion -> {
+            actual.forEach(suggestion -> {
                 assertTrue(suggestion.key.toString().contains("<em>"));
                 assertTrue(suggestion.key.toString().contains("</em>"));
             });
@@ -571,6 +570,7 @@ public class FreeTextSuggesterTest extends LuceneTestCase {
         }
         return b.toString().trim();
     }
+
     private static String toString(List<LookupResult> results) {
         StringBuilder b = new StringBuilder();
         for (LookupResult result : results) {
