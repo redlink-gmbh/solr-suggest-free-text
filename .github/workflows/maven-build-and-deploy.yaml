@@ -79,7 +79,7 @@ jobs:
     if: ${{ !cancelled() }}
     steps:
       - name: Fetch Test-Results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: test-results
       - name: Report Results
