@@ -29,7 +29,7 @@ jobs:
             sonar: enabled
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set up Java/Maven
@@ -63,7 +63,7 @@ jobs:
     if: ${{ !cancelled() }}
     steps:
       - name: Fetch Test-Results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: test-results
       - name: Report Results
