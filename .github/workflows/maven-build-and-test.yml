@@ -8,10 +8,6 @@ on:
   pull_request:
     types: [ opened, synchronize, reopened ]
 
-permissions:
-  checks: write
-  pull-requests: write
-
 jobs:
   build:
     name: Build and Test (Solr ${{ matrix.version.solr }})
@@ -61,6 +57,9 @@ jobs:
     needs: [ build ]
     runs-on: ubuntu-latest
     if: ${{ !cancelled() }}
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Fetch Test-Results
         uses: actions/download-artifact@v7
