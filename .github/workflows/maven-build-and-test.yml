@@ -29,11 +29,11 @@ jobs:
             sonar: enabled
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up Java/Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -51,7 +51,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Upload Test-Results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Test Results (Solr ${{matrix.version.solr}})
           path: '**/TEST-*.xml'
@@ -63,7 +63,7 @@ jobs:
     if: ${{ !cancelled() }}
     steps:
       - name: Fetch Test-Results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: test-results
       - name: Report Results
