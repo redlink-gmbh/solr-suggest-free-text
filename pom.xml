@@ -65,17 +65,6 @@
         <url>https://github.com/redlink-gmbh/solr-suggest-free-text/issues</url>
     </issueManagement>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <properties>
         <project.build.encoding>utf8</project.build.encoding>
         <project.build.sourceEncoding>utf8</project.build.sourceEncoding>
