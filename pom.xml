@@ -22,10 +22,10 @@
     <version>3.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Free Text Suggestor</name>
+    <name>Free Text Suggester</name>
     <url>https://github.com/redlink-gmbh/solr-suggest-free-text</url>
     <description>
-        Version of the Solr Free Text Suggestor that collate suggestions into
+        Version of the Solr Free Text Suggester that collate suggestions into
         the original search query and provides highlighting information about
         the parts of the suggested query that was appended/added by the
         highlighter.
@@ -242,6 +242,10 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -263,14 +267,15 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.7.0</version>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.10.0</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <serverId>ossrh</serverId>
-                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        <deploymentName>${project.name}</deploymentName>
+                        <publishingServerId>central</publishingServerId>
+                        <autoPublish>true</autoPublish>
+                        <waitUntil>published</waitUntil>
                     </configuration>
                 </plugin>
             </plugins>
@@ -368,10 +373,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
