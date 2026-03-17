@@ -67,7 +67,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Upload Test-Results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Test Results (Solr ${{matrix.version.solr}})
           path: '**/TEST-*.xml'
@@ -79,7 +79,7 @@ jobs:
     if: ${{ !cancelled() }}
     steps:
       - name: Fetch Test-Results
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: test-results
       - name: Report Results
