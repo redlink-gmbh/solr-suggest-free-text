@@ -162,7 +162,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.5</version>
+                <version>3.5.6</version>
                 <configuration>
                     <systemPropertyVariables>
                         <test.solr.allowed.securerandom>NativePRNG</test.solr.allowed.securerandom>
@@ -175,11 +175,11 @@
             </plugin>
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.21.0</version>
+                <version>3.22.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.11.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
